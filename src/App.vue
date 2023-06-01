@@ -1,4 +1,4 @@
-c<template>
+<template>
   <div id="app" :class="typeof weather.main !='undefined' && weather.main.temp >16 ? 'warm':''">
    <main >
     
@@ -15,7 +15,7 @@ c<template>
         <div class="date">{{ dateBuilder() }}</div>
       </div>
 <div class="weather-box">
-  <div class="temp">{{ Math.round(weather.main.temp) }}c</div>
+  <div class="temp">{{ Math.round(weather.main.temp) }}&#176;c</div>
   <div class="weather">{{ weather.weather[0].main}}</div>
 </div>
     </div>
@@ -30,31 +30,51 @@ export default {
   name: 'App',
   data (){
     return {
-      api_key:'824acb4150fa4b34582f27164f6639c0',
-      url_base:'https://api.openweathermap.org/data/3.0/',
+      posts: [],
+
+      api_key:'592e2f769463caaf970a079efc46fad9',
+      url_base:'https://api.openweathermap.org/data/2.5/',
       query:'',
-      weather:{}
-      
-
+      weather:{},
+      error:null
     }
-    
-  },
-  method:{
-fetchweather(e) {
-  if (e.key == "Enter")
-  {
-    fetch (`${this.url_base}weather?q=${this.query}$units=metric$APPID=${this.api_key}`)
-    .then(res => {return res.json();
-
-    }).then(this.setResults);
-  }
-  
 },
-setResults(results){
-  this.weather=results;
-}
+created() {
+    this.getData()
+},
+methods: {
+    async getData() {
+      try {
+        let response = await fetch("http://jsonplaceholder.typicode.com/posts")
+        this.posts = await response.json()
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    fetchweather(e) {
+    if (e.key == "Enter")
+    {
+      fetch (`${this.url_base}weather?q=${this.query}$units=metric$APPID=${this.api_key}`)
+      .then(res => {return res.json();
+
+      }).then(this.setResults);
+    }
+
+   axios.get(`https://api.openweathermap.org/data/2.5/weather?appid=${this.api_key}&q=${this.query}`)
+        .then(response => {
+          // Process the weather data
+          this.weather = response.data;
+        })
+        .catch(error => {
+          // Handle errors
+          this.error = 'Error fetching weather data.';
+          console.error('Error fetching weather data:', error);
+        });
   },
-  dateBuilder(){
+    setResults(results){
+      this.weather=results;
+    },
+    dateBuilder(){
     let d= new Date();
     let months=["January", "February","March","April","May","June","July","August","September","October","November",
   "December"];
@@ -66,11 +86,13 @@ setResults(results){
   let year = d.getFullYear();
   return `${day} ${date}${month}${year}`;
   }
-
+  },
+  
 }
+
 </script>
 
-<style>
+<style scoped>
 
 body{
   font-family:'Times New Roman', Times, serif;
